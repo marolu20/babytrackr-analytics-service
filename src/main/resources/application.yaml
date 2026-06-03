@@ -1,3 +1,10 @@
 spring:
   application:
     name: babytrackr-analytics-service
+server:
+  port: 8082
+babytrackr:
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      baby-events: baby-events
