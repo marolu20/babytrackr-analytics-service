@@ -13,12 +13,12 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.support.serializer.JsonDeserializer
 
 @Configuration
-class KafkaConsumerConfig(
-    private val kafkaProperties: KafkaProperties
+open class KafkaConsumerConfig(
+    val kafkaProperties: KafkaProperties
 ) {
 
     @Bean
-    fun consumerFactory(): ConsumerFactory<Long, EventMessage> {
+    open fun consumerFactory(): ConsumerFactory<Long, EventMessage> {
 
         val configProps: MutableMap<String, Any> = HashMap()
 
@@ -40,7 +40,7 @@ class KafkaConsumerConfig(
     }
 
     @Bean
-    fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<Long, EventMessage> {
+    open fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<Long, EventMessage> {
         val factory = ConcurrentKafkaListenerContainerFactory<Long, EventMessage>()
         factory.setConsumerFactory(consumerFactory())
         factory.setConcurrency(1)

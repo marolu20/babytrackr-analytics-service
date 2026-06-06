@@ -1,9 +1,9 @@
 plugins {
 	kotlin("jvm") version "2.2.21"
-	kotlin("plugin.spring") version "2.2.21"
-	id("org.springframework.boot") version "4.0.6"
+	//	kotlin("plugin.spring") version "2.2.21" // commenting until database is active
+	id("org.springframework.boot") version "3.5.0"
 	id("io.spring.dependency-management") version "1.1.7"
-	kotlin("plugin.jpa") version "2.2.21"
+	//	kotlin("plugin.jpa") version "2.2.21" // commenting until database is active
 }
 
 group = "com.babytrackr"
@@ -20,12 +20,11 @@ repositories {
 }
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
-	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+	implementation("org.springframework.boot:spring-boot-starter-web")
 
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("tools.jackson.module:jackson-module-kotlin")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
 	implementation("org.springframework.kafka:spring-kafka")
@@ -34,11 +33,9 @@ dependencies {
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-	runtimeOnly("org.postgresql:postgresql")
+	//	runtimeOnly("org.postgresql:postgresql") // commenting until database is active
 
-	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 
 	testImplementation("org.springframework.kafka:spring-kafka-test")
@@ -52,11 +49,12 @@ kotlin {
 	}
 }
 
-allOpen {
-	annotation("jakarta.persistence.Entity")
-	annotation("jakarta.persistence.MappedSuperclass")
-	annotation("jakarta.persistence.Embeddable")
-}
+// commenting until database is active
+//allOpen {
+//	annotation("jakarta.persistence.Entity")
+//	annotation("jakarta.persistence.MappedSuperclass")
+//	annotation("jakarta.persistence.Embeddable")
+//}
 
 tasks.withType<Test> {
 	useJUnitPlatform()
