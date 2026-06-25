@@ -21,5 +21,6 @@ class DailyDiaperSummary(
     var date: LocalDate,
     var totalDiaperChanges: Int = 0,
     var totalWetDiapers: Int = 0,
-    var totalSolidDiapers: Int = 0
+    var totalSolidDiapers: Int = 0,
+    var totalMixedDiapers: Int = 0
 )
