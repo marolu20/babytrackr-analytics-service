@@ -13,6 +13,7 @@ class FeedEvent(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
+    var eventId: Long?,
     var babyId: Long,
     var feedingAmountOz: Int = 0,
     var createdOn: Instant
