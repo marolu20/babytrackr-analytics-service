@@ -4,4 +4,6 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface FeedEventRepository: CrudRepository<FeedEvent, Long> {}
+interface FeedEventRepository: CrudRepository<FeedEvent, Long> {
+    fun findByEventId(eventId: Long): FeedEvent?
+}

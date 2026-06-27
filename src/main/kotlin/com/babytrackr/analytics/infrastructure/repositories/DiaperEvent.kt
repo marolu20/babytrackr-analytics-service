@@ -16,6 +16,7 @@ class DiaperEvent(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
+    var eventId: Long?,
     var babyId: Long,
     @Enumerated(EnumType.STRING)
     var diaperType: DiaperType,

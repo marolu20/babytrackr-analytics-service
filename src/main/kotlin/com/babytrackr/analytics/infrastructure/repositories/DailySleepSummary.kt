@@ -20,5 +20,5 @@ class DailySleepSummary(
     var babyId: Long,
     var date: LocalDate,
     var totalSleepSessions: Int = 0,
-    var totalMinutes: Int = 0
+    var totalSleepMinutes: Int = 0
 )
