@@ -1,0 +1,54 @@
+==============
+Analytics Controller
+==============
+
+Get Feed Summary Detail
+==============
+
+curl -i http://localhost:8081/v1/reports/babies/{babyId}/feed/summary-detail?period={PeriodType}&{date}
+Examples:
+Daily:
+    curl -i http://localhost:8081/v1/reports/babies/11/feed/summary-detail?period=DAILY&date=2026-06-26
+Weekly:
+    curl -i http://localhost:8081/v1/reports/babies/11/feed/summary-detail?period=WEEKLY&date=2026-06-26
+Monthly:
+    curl -i http://localhost:8081/v1/reports/babies/11/feed/summary-detail?period=MONTHLY&date=2026-06-26
+Custom:
+    curl -i http://localhost:8081/v1/reports/babies/11/feed/summary-detail?period=CUSTOM&startDate=2026-6-26&endDate=2026-07-01
+
+
+
+Get Sleep Summary Detail
+==============
+curl -i http://localhost:8081/v1/reports/babies/{babyId}/sleep/summary-detail?
+Daily:
+    curl -i http://localhost:8081/v1/reports/babies/{babyId}/sleep/summary-detail?period=DAILY&date=2026-06-26
+Weekly:
+    curl -i http://localhost:8081/v1/reports/babies/{babyId}/sleep/summary-detail?period=WEEKLY&date=2026-06-26
+Monthly:
+    curl -i http://localhost:8081/v1/reports/babies/{babyId}/sleep/summary-detail?period=MONTHLY&date=2026-06-26
+Custom:
+    curl -i http://localhost:8081/v1/reports/babies/{babyId}/sleep/summary-detail?period=CUSTOM&startDate=2026-06-26&endDate=2026-07-01
+
+
+period=DAILY&date=2026-06-26
+
+
+Get Diaper Summary Detail
+==============
+curl -i http://localhost:8081/v1/reports/babies/{babyId}/diaper/summary-detail?
+Daily:
+    curl -i http://localhost:8081/v1/reports/babies/{babyId}/diaper/summary-detail?period=DAILY&date=2026-06-26
+Weekly:
+    curl -i http://localhost:8081/v1/reports/babies/{babyId}/diaper/summary-detail?period=WEEKLY&date=2026-06-26
+Monthly:
+    curl -i http://localhost:8081/v1/reports/babies/{babyId}/diaper/summary-detail?period=MONTHLY&date=2026-06-26
+Custom:
+    curl -i http://localhost:8081/v1/reports/babies/{babyId}/diaper/summary-detail?period=CUSTOM&startDate=2026-06-26&endDate=2026-07-01
+
+
+Get Dashboard
+==============
+curl -i http://localhost:8081/v1/reports/babies/{babyId}/dashboard
+curl -i http://localhost:8081/v1/reports/babies/11/dashboard
+
