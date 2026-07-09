@@ -1,4 +1,4 @@
-package com.babytrackr.analytics.application.services
+package com.babytrackr.analytics.application.mapper
 
 import com.babytrackr.analytics.infrastructure.model.DiaperPayload
 import com.babytrackr.analytics.infrastructure.model.EventMessage
@@ -18,7 +18,7 @@ class EventTransformer(
     /*
     Converts the payload JSON into a FeedPayload object
      */
-    fun toFeedPayload(message:EventMessage): FeedPayload {
+    fun toFeedPayload(message: EventMessage): FeedPayload {
         return objectMapper.readValue(
             message.payload,
             FeedPayload::class.java
