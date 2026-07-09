@@ -5,4 +5,10 @@ import java.time.LocalDate
 
 interface DailyDiaperSummaryRepository: CrudRepository<DailyDiaperSummary, Long> {
     fun findByBabyIdAndDate(babyId: Long, date: LocalDate): DailyDiaperSummary?
+
+    fun findByBabyIdAndDateBetween(
+        babyId: Long,
+        start: LocalDate,
+        end: LocalDate
+    ): List<DailyDiaperSummary>
 }
