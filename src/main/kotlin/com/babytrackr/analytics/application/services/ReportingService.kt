@@ -15,8 +15,10 @@ import com.babytrackr.analytics.controller.model.response.DashboardReportRespons
 import com.babytrackr.analytics.controller.model.response.DiaperReportResponse
 import com.babytrackr.analytics.controller.model.response.FeedBreakdown
 import com.babytrackr.analytics.controller.model.response.FeedReportResponse
+import com.babytrackr.analytics.controller.model.response.RecentActivitySummary
 import com.babytrackr.analytics.controller.model.response.SleepBreakdown
 import com.babytrackr.analytics.controller.model.response.SleepReportResponse
+import com.babytrackr.analytics.domain.enums.EventType
 import com.babytrackr.analytics.domain.enums.PeriodType
 import com.babytrackr.analytics.infrastructure.repositories.DailyDiaperSummary
 import com.babytrackr.analytics.infrastructure.repositories.DailyDiaperSummaryRepository
@@ -173,14 +175,14 @@ class ReportingService(
         return when (period) {
 
             PeriodType.DAILY -> {
-            val safeDate = requireNotNull(date)
+                val safeDate = requireNotNull(date)
 
-            logDateRange(period, safeDate, safeDate)
-            DateRange(
-                safeDate,
-                safeDate
-            )
-        }
+                logDateRange(period, safeDate, safeDate)
+                DateRange(
+                    safeDate,
+                    safeDate
+                )
+            }
 
             PeriodType.WEEKLY -> {
                 val safeDate = requireNotNull(date)
@@ -472,6 +474,44 @@ class ReportingService(
 
     }
 
+    private fun getRecentActivity(babyId: Long): List<RecentActivitySummary> {
+        val feedTop10 = feedEventRepository.findTop10ByBabyIdOrderByCreatedOnDesc(babyId)
+        val sleepTop10 = sleepEventRepository.findTop10ByBabyIdOrderByCreatedOnDesc(babyId)
+        val diaperTop10 = diaperEventRepository.findTop10ByBabyIdOrderByCreatedOnDesc(babyId)
+
+        val feedRecentActivity = feedTop10.map { event ->
+            RecentActivitySummary(
+                eventType = EventType.SLEEP.toString().lowercase().replaceFirstChar { it.titlecase() },
+                timestamp = event.createdOn,
+                summary = "${event.feedingAmountOz.toString()} oz bottle"
+            )
+        }
+
+        val sleepRecentActivity = sleepTop10.map { event ->
+            RecentActivitySummary(
+                eventType = EventType.SLEEP.toString().lowercase().replaceFirstChar { it.titlecase() },
+                timestamp = event.createdOn,
+                summary = "Slep for ${(event.sleepDurationMinutes.toDouble() / 60).toInt()}h ${event.sleepDurationMinutes % 60}m"
+
+            )
+        }
+
+        val diaperRecentActivity = diaperTop10.map { event ->
+            RecentActivitySummary(
+                eventType = EventType.DIAPER.toString().lowercase().replaceFirstChar { it.titlecase() },
+                timestamp = event.createdOn,
+                summary = "${event.diaperType.toString().lowercase().replaceFirstChar { it.titlecase() }} Diaper"
+            )
+        }
+
+        val recentActivity = feedRecentActivity + sleepRecentActivity + diaperRecentActivity
+
+
+        val sortedActivity = recentActivity.sortedByDescending { it.timestamp }.take(5)
+
+        return sortedActivity
+    }
+
     fun getDashboard(babyId: Long): DashboardReportResponse {
 
         val today = LocalDate.now()
@@ -479,6 +519,8 @@ class ReportingService(
         val feedSummary = dailyFeedSummaryRepository.findByBabyIdAndDate(babyId,today)
         val sleepSummary = dailySleepSummaryRepository.findByBabyIdAndDate(babyId, today)
         val diaperSummary = dailyDiaperSummaryRepository.findByBabyIdAndDate(babyId, today)
+
+        val recentActivity = getRecentActivity(babyId)
 
         val response = DashboardReportResponse(
             date = today,
@@ -488,13 +530,13 @@ class ReportingService(
                     totalOunces = it.totalOunces,
                 )
             } ?: FeedData(
-                    totalFeedings = 0,
-                    totalOunces = 0
+                totalFeedings = 0,
+                totalOunces = 0
             ),
             sleep = sleepSummary?.let {
                 SleepData(
-                totalSleepSessions = it.totalSleepSessions,
-                totalSleepMinutes = it.totalSleepMinutes
+                    totalSleepSessions = it.totalSleepSessions,
+                    totalSleepMinutes = it.totalSleepMinutes
                 )
             } ?: SleepData(
                 totalSleepSessions = 0,
@@ -512,11 +554,10 @@ class ReportingService(
                 totalWetDiapers = 0,
                 totalSolidDiapers = 0,
                 totalMixedDiapers = 0
-            )
+            ),
+            recentActivity
         )
         logger.info("Dashboard report generated")
         return response
     }
 }
-
-
