@@ -9,4 +9,8 @@ interface FeedEventRepository: CrudRepository<FeedEvent, Long> {
     fun findByEventId(eventId: Long): FeedEvent?
 
     fun findByBabyIdAndCreatedOnBetween(babyId: Long, start: Instant, end: Instant): List<FeedEvent>
+
+    fun findTop10ByBabyIdOrderByCreatedOnDesc(
+        babyId: Long
+    ): List<FeedEvent>
 }
