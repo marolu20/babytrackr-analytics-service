@@ -481,7 +481,7 @@ class ReportingService(
 
         val feedRecentActivity = feedTop10.map { event ->
             RecentActivitySummary(
-                eventType = EventType.SLEEP.toString().lowercase().replaceFirstChar { it.titlecase() },
+                eventType = EventType.FEED.toString().lowercase().replaceFirstChar { it.titlecase() },
                 timestamp = event.createdOn,
                 summary = "${event.feedingAmountOz.toString()} oz bottle"
             )
@@ -491,7 +491,7 @@ class ReportingService(
             RecentActivitySummary(
                 eventType = EventType.SLEEP.toString().lowercase().replaceFirstChar { it.titlecase() },
                 timestamp = event.createdOn,
-                summary = "Slep for ${(event.sleepDurationMinutes.toDouble() / 60).toInt()}h ${event.sleepDurationMinutes % 60}m"
+                summary = "Slept for ${(event.sleepDurationMinutes.toDouble() / 60).toInt()}h ${event.sleepDurationMinutes % 60}m"
 
             )
         }
