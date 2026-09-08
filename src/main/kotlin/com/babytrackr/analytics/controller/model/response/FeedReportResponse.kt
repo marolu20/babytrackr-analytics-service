@@ -7,6 +7,6 @@ data class FeedReportResponse(
     val period: PeriodType,
     val range: DateRange,
     val totalFeedings: Int,
-    val totalOunces: Int,
+    val totalOunces: Double,
     val breakdown: List<FeedBreakdown>
 )
