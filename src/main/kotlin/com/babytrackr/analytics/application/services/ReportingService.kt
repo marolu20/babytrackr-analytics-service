@@ -531,7 +531,7 @@ class ReportingService(
                 )
             } ?: FeedData(
                 totalFeedings = 0,
-                totalOunces = 0
+                totalOunces = 0.0
             ),
             sleep = sleepSummary?.let {
                 SleepData(

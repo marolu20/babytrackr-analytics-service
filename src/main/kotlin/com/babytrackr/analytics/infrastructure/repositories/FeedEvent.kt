@@ -15,6 +15,6 @@ class FeedEvent(
     var id: Long? = null,
     var eventId: Long?,
     var babyId: Long,
-    var feedingAmountOz: Int = 0,
+    var feedingAmountOz: Double = 0.0,
     var createdOn: Instant
 )

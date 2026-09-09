@@ -20,5 +20,5 @@ class DailyFeedSummary(
     var babyId: Long,
     var date: LocalDate,
     var totalFeedings: Int = 0,
-    var totalOunces: Int = 0
+    var totalOunces: Double = 0.0
 )
