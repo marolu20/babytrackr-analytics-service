@@ -7,6 +7,7 @@ import com.babytrackr.analytics.controller.model.DiaperTotals
 import com.babytrackr.analytics.controller.model.FeedData
 import com.babytrackr.analytics.controller.model.FeedTotals
 import com.babytrackr.analytics.controller.model.QueryDateRange
+import com.babytrackr.analytics.domain.ReportParams
 import com.babytrackr.analytics.controller.model.SleepData
 import com.babytrackr.analytics.controller.model.SleepTotals
 import com.babytrackr.analytics.controller.model.response.AggregateDiaperBreakdown
@@ -19,6 +20,8 @@ import com.babytrackr.analytics.controller.model.response.RecentActivitySummary
 import com.babytrackr.analytics.controller.model.response.SleepBreakdown
 import com.babytrackr.analytics.controller.model.response.SleepReportResponse
 import com.babytrackr.analytics.domain.enums.EventType
+import com.babytrackr.analytics.domain.enums.Granularity
+import com.babytrackr.analytics.domain.enums.Period
 import com.babytrackr.analytics.domain.enums.PeriodType
 import com.babytrackr.analytics.infrastructure.repositories.DailyDiaperSummary
 import com.babytrackr.analytics.infrastructure.repositories.DailyDiaperSummaryRepository
@@ -52,6 +55,18 @@ class ReportingService(
     private companion object {
         val logger: Logger = LoggerFactory.getLogger(ReportingService::class.java)
         val TIMEFORMATTER = DateTimeFormatter.ofPattern("h:mm a")
+        private val supportedParams: Set<ReportParams> = setOf(
+            ReportParams(Period.DAY, Granularity.DAY),
+            ReportParams(Period.WEEK, Granularity.DAY),
+            ReportParams(Period.WEEK, Granularity.WEEK),
+            ReportParams(Period.MONTH, Granularity.DAY),
+            ReportParams(Period.MONTH, Granularity.WEEK),
+            ReportParams(Period.MONTH, Granularity.MONTH),
+            ReportParams(Period.YEAR, Granularity.WEEK),
+            ReportParams(Period.YEAR, Granularity.MONTH),
+            ReportParams(Period.YEAR, Granularity.YEAR),
+        )
+
     }
 
     private fun validateRequest(
@@ -559,5 +574,30 @@ class ReportingService(
         )
         logger.info("Dashboard report generated")
         return response
+    }
+
+    private fun validateReportParams(
+        period: Period,
+        granularity: Granularity
+    ): Boolean {
+
+        val incomingParams = ReportParams(
+            period = period,
+            granularity = granularity
+        )
+
+        return supportedParams.contains(incomingParams)
+
+    }
+
+    fun getFeedingReport(
+        babyId: Long,
+        period: Period,
+        granularity: Granularity
+    ): Boolean {
+
+        val supported = validateReportParams(period, granularity)
+
+        return supported
     }
 }

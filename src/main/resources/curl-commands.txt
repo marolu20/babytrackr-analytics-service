@@ -52,3 +52,9 @@ Get Dashboard
 curl -i http://localhost:8081/v1/reports/babies/{babyId}/dashboard
 curl -i http://localhost:8081/v1/reports/babies/11/dashboard
 
+
+Reports
+==============
+curl -i http://localhost:8081/v1/reports/babies/{babyId}/feedings?period=MONTH&granularity=WEEK
+curl -i "http://localhost:8081/v1/reports/babies/11/feedings?period=MONTH&granularity=WEEK"
+
