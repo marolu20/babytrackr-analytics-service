@@ -5,6 +5,8 @@ import com.babytrackr.analytics.controller.model.response.DashboardReportRespons
 import com.babytrackr.analytics.controller.model.response.DiaperReportResponse
 import com.babytrackr.analytics.controller.model.response.FeedReportResponse
 import com.babytrackr.analytics.controller.model.response.SleepReportResponse
+import com.babytrackr.analytics.domain.enums.Granularity
+import com.babytrackr.analytics.domain.enums.Period
 import com.babytrackr.analytics.domain.enums.PeriodType
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.validation.annotation.Validated
@@ -78,5 +80,14 @@ class AnalyticsController(
         @PathVariable babyId: Long
     ): DashboardReportResponse {
         return reportingService.getDashboard(babyId)
+    }
+
+    @GetMapping("/{babyId}/feedings")
+    fun getFeedingReport(
+        @PathVariable babyId: Long,
+        @RequestParam(required = true) period: Period,
+        @RequestParam(required = true) granularity: Granularity,
+    ): Boolean {
+        return reportingService.getFeedingReport(babyId, period, granularity)
     }
 }
