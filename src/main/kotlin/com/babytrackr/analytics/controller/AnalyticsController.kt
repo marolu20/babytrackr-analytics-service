@@ -1,10 +1,17 @@
 package com.babytrackr.analytics.controller
 
 import com.babytrackr.analytics.application.services.ReportingService
+import com.babytrackr.analytics.controller.model.response.AggregatedReport
 import com.babytrackr.analytics.controller.model.response.DashboardReportResponse
 import com.babytrackr.analytics.controller.model.response.DiaperReportResponse
 import com.babytrackr.analytics.controller.model.response.FeedReportResponse
 import com.babytrackr.analytics.controller.model.response.SleepReportResponse
+import com.babytrackr.analytics.domain.DiaperReportBucket
+import com.babytrackr.analytics.domain.DiaperReportSummary
+import com.babytrackr.analytics.domain.FeedingReportBucket
+import com.babytrackr.analytics.domain.FeedingReportSummary
+import com.babytrackr.analytics.domain.SleepingReportBucket
+import com.babytrackr.analytics.domain.SleepingReportSummary
 import com.babytrackr.analytics.domain.enums.Granularity
 import com.babytrackr.analytics.domain.enums.Period
 import com.babytrackr.analytics.domain.enums.PeriodType
@@ -87,7 +94,25 @@ class AnalyticsController(
         @PathVariable babyId: Long,
         @RequestParam(required = true) period: Period,
         @RequestParam(required = true) granularity: Granularity,
-    ): Boolean {
+    ): AggregatedReport<FeedingReportSummary, FeedingReportBucket> {
         return reportingService.getFeedingReport(babyId, period, granularity)
+    }
+
+    @GetMapping("/{babyId}/sleep")
+    fun getSleepingReport(
+        @PathVariable babyId: Long,
+        @RequestParam(required = true) period: Period,
+        @RequestParam(required = true) granularity: Granularity,
+    ): AggregatedReport<SleepingReportSummary, SleepingReportBucket> {
+        return reportingService.getSleepReport(babyId, period, granularity)
+    }
+
+    @GetMapping("/{babyId}/diapers")
+    fun getDiaperReport(
+        @PathVariable babyId: Long,
+        @RequestParam(required = true) period: Period,
+        @RequestParam(required = true) granularity: Granularity,
+    ): AggregatedReport<DiaperReportSummary, DiaperReportBucket> {
+        return reportingService.getDiaperReport(babyId, period, granularity)
     }
 }
