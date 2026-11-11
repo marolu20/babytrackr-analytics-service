@@ -26,7 +26,7 @@ class EventTransformer(
     }
 
     /*
-    Converts the Kafka massage into a FeedEvent database entity record
+    Converts the Kafka message into a FeedEvent database entity record
      */
     fun toFeedEvent(message: EventMessage): FeedEvent {
         val payload = toFeedPayload(message)
@@ -49,7 +49,7 @@ class EventTransformer(
     }
 
     /*
-    Converts the Kafka massage into a SleepEvent database entity record
+    Converts the Kafka message into a SleepEvent database entity record
      */
     fun toSleepEvent(message: EventMessage): SleepEvent {
         val payload = toSleepPayload(message)
@@ -72,7 +72,7 @@ class EventTransformer(
     }
 
     /*
-    Converts the Kafka massage into a DiaperEvent database entity record
+    Converts the Kafka message into a DiaperEvent database entity record
      */
     fun toDiaperEvent(message: EventMessage): DiaperEvent {
         val payload = toDiaperPayload(message)

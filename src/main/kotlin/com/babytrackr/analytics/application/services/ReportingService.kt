@@ -11,6 +11,7 @@ import com.babytrackr.analytics.domain.ReportParams
 import com.babytrackr.analytics.controller.model.SleepData
 import com.babytrackr.analytics.controller.model.SleepTotals
 import com.babytrackr.analytics.controller.model.response.AggregateDiaperBreakdown
+import com.babytrackr.analytics.controller.model.response.AggregatedReport
 import com.babytrackr.analytics.controller.model.response.DailyDiaperBreakdown
 import com.babytrackr.analytics.controller.model.response.DashboardReportResponse
 import com.babytrackr.analytics.controller.model.response.DiaperReportResponse
@@ -19,10 +20,17 @@ import com.babytrackr.analytics.controller.model.response.FeedReportResponse
 import com.babytrackr.analytics.controller.model.response.RecentActivitySummary
 import com.babytrackr.analytics.controller.model.response.SleepBreakdown
 import com.babytrackr.analytics.controller.model.response.SleepReportResponse
+import com.babytrackr.analytics.domain.DiaperReportBucket
+import com.babytrackr.analytics.domain.DiaperReportSummary
+import com.babytrackr.analytics.domain.FeedingReportBucket
+import com.babytrackr.analytics.domain.FeedingReportSummary
+import com.babytrackr.analytics.domain.SleepingReportBucket
+import com.babytrackr.analytics.domain.SleepingReportSummary
 import com.babytrackr.analytics.domain.enums.EventType
 import com.babytrackr.analytics.domain.enums.Granularity
 import com.babytrackr.analytics.domain.enums.Period
 import com.babytrackr.analytics.domain.enums.PeriodType
+import com.babytrackr.analytics.domain.exception.UnsupportedReportParametersException
 import com.babytrackr.analytics.infrastructure.repositories.DailyDiaperSummary
 import com.babytrackr.analytics.infrastructure.repositories.DailyDiaperSummaryRepository
 import com.babytrackr.analytics.infrastructure.repositories.DailyFeedSummary
@@ -36,9 +44,12 @@ import jakarta.persistence.EntityNotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 
 @Service
 class ReportingService(
@@ -66,7 +77,6 @@ class ReportingService(
             ReportParams(Period.YEAR, Granularity.MONTH),
             ReportParams(Period.YEAR, Granularity.YEAR),
         )
-
     }
 
     private fun validateRequest(
@@ -590,14 +600,230 @@ class ReportingService(
 
     }
 
+    private fun calculateReportDateRange(
+        period: Period,
+    ): DateRange {
+        // given a period calculates the date range
+        val currentDate = LocalDate.now(ZoneOffset.UTC)
+
+        println("Default timezone: ${ZoneId.systemDefault()}")
+        println("Local date: ${LocalDate.now()}")
+        println("UTC date: ${LocalDate.now(ZoneOffset.UTC)}")
+
+
+        val startDate = when (period) {
+            Period.DAY -> currentDate
+            Period.WEEK -> currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            Period.MONTH -> currentDate.withDayOfMonth(1)
+            Period.YEAR -> currentDate.withDayOfYear(1)
+        }
+
+        val dateRange = DateRange(
+           startDate = startDate,
+           endDate = currentDate
+        )
+        print("Date Range $dateRange")
+        return dateRange
+    }
+
+    private fun aggregateFeedingReport(
+        summary: List<DailyFeedSummary>,
+        granularity: Granularity
+    ): AggregatedReport<FeedingReportSummary, FeedingReportBucket> {
+
+        val groupedSummary = summary.groupBy { item ->
+            val date = item.date
+             when (granularity) {
+                Granularity.DAY -> date
+                Granularity.WEEK -> date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                Granularity.MONTH -> date.withDayOfMonth(1)
+                Granularity.YEAR -> date.withDayOfYear(1)
+            }
+        }
+
+        val overallSummary = FeedingReportSummary(
+            totalOunces = summary.sumOf { it.totalOunces },
+            totalFeedings = summary.sumOf { it.totalFeedings }
+        )
+
+        val reportBuckets = groupedSummary.map { entry ->
+            FeedingReportBucket(
+                date = entry.key,
+                totalOunces = entry.value.sumOf { it.totalOunces },
+                totalFeedings = entry.value.sumOf { it.totalFeedings },
+            )
+        }.sortedBy { it.date }
+
+        return AggregatedReport(
+            overall = overallSummary,
+            buckets = reportBuckets
+        )
+    }
+
+    private fun aggregateSleepingReport(
+        summary: List<DailySleepSummary>,
+        granularity: Granularity
+    ): AggregatedReport<SleepingReportSummary, SleepingReportBucket> {
+
+        val groupedSummary = summary.groupBy { item ->
+            val date = item.date
+            when (granularity) {
+                Granularity.DAY -> date
+                Granularity.WEEK -> date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                Granularity.MONTH -> date.withDayOfMonth(1)
+                Granularity.YEAR -> date.withDayOfYear(1)
+            }
+        }
+
+        val overallSummary = SleepingReportSummary(
+            totalSleepMinutes = summary.sumOf { it.totalSleepMinutes },
+            totalSleepSessions = summary.sumOf { it.totalSleepSessions }
+        )
+
+        val reportBuckets = groupedSummary.map { entry ->
+            SleepingReportBucket(
+                date = entry.key,
+                totalSleepMinutes = entry.value.sumOf { it.totalSleepMinutes },
+                totalSleepSessions = entry.value.sumOf { it.totalSleepSessions },
+            )
+        }.sortedBy { it.date }
+
+        return AggregatedReport(
+            overall = overallSummary,
+            buckets = reportBuckets
+        )
+    }
+
+    private fun aggregateDiaperReport(
+        summary: List<DailyDiaperSummary>,
+        granularity: Granularity
+    ): AggregatedReport<DiaperReportSummary, DiaperReportBucket> {
+
+        val groupedSummary = summary.groupBy { item ->
+            val date = item.date
+            when (granularity) {
+                Granularity.DAY -> date
+                Granularity.WEEK -> date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                Granularity.MONTH -> date.withDayOfMonth(1)
+                Granularity.YEAR -> date.withDayOfYear(1)
+            }
+        }
+
+        val overallSummary = DiaperReportSummary(
+            totalWetDiapers = summary.sumOf { it.totalWetDiapers },
+            totalSolidDiapers = summary.sumOf { it.totalSolidDiapers },
+            totalMixedDiapers = summary.sumOf { it.totalMixedDiapers },
+            totalDiaperChanges = summary.sumOf { it.totalDiaperChanges }
+        )
+
+        val reportBuckets = groupedSummary.map { entry ->
+            DiaperReportBucket(
+                date = entry.key,
+                totalWetDiapers = entry.value.sumOf { it.totalWetDiapers },
+                totalSolidDiapers = entry.value.sumOf { it.totalSolidDiapers },
+                totalMixedDiapers = entry.value.sumOf { it.totalMixedDiapers },
+                totalDiaperChanges = entry.value.sumOf { it.totalDiaperChanges },
+            )
+        }.sortedBy { it.date }
+
+        return AggregatedReport(
+            overall = overallSummary,
+            buckets = reportBuckets
+        )
+    }
+
     fun getFeedingReport(
         babyId: Long,
         period: Period,
         granularity: Granularity
-    ): Boolean {
+    ): AggregatedReport<FeedingReportSummary, FeedingReportBucket> {
 
+        // validate the api params
         val supported = validateReportParams(period, granularity)
 
-        return supported
+        val response = if (supported) {
+
+            val dateRange = calculateReportDateRange(period)
+            println("Data Range HERE: $dateRange")
+
+            val summaryResults = dailyFeedSummaryRepository.findByBabyIdAndDateBetween(
+                babyId,
+                dateRange.startDate,
+                dateRange.endDate
+            )
+            println("Summary HERE: $summaryResults")
+            summaryResults
+        }
+        else {
+            throw UnsupportedReportParametersException("Period $period and Granularity $granularity parameters are not supported")
+        }
+
+        val results = aggregateFeedingReport(response, granularity)
+
+        return results
     }
+
+
+    fun getSleepReport(
+        babyId: Long,
+        period: Period,
+        granularity: Granularity
+    ): AggregatedReport<SleepingReportSummary, SleepingReportBucket> {
+
+        // validate the api params
+        val supported = validateReportParams(period, granularity)
+
+        val response = if (supported) {
+
+            val dateRange = calculateReportDateRange(period)
+            println("Data Range: $dateRange")
+
+            val summaryResults = dailySleepSummaryRepository.findByBabyIdAndDateBetween(
+                babyId,
+                dateRange.startDate,
+                dateRange.endDate
+            )
+            println("Summary: $summaryResults")
+            summaryResults
+        }
+        else {
+            throw UnsupportedReportParametersException("Period $period and Granularity $granularity parameters are not supported")
+        }
+
+        val results = aggregateSleepingReport(response, granularity)
+
+        return results
+    }
+
+    fun getDiaperReport(
+        babyId: Long,
+        period: Period,
+        granularity: Granularity
+    ): AggregatedReport<DiaperReportSummary, DiaperReportBucket> {
+
+        // validate the api params
+        val supported = validateReportParams(period, granularity)
+
+        val response = if (supported) {
+
+            val dateRange = calculateReportDateRange(period)
+            println("Data Range: $dateRange")
+
+            val summaryResults = dailyDiaperSummaryRepository.findByBabyIdAndDateBetween(
+                babyId,
+                dateRange.startDate,
+                dateRange.endDate
+            )
+            println("Summary: $summaryResults")
+            summaryResults
+        }
+        else {
+            throw UnsupportedReportParametersException("Period $period and Granularity $granularity parameters are not supported")
+        }
+
+        val results = aggregateDiaperReport(response, granularity)
+
+        return results
+    }
+
 }
